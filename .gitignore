@@ -50,3 +50,6 @@ backend/out
 
 # Ignore deck.json, which is developer-specific and stores the sensitive sudo password
 deck.json
+
+# Ignore venv
+venv/

@@ -109,6 +109,45 @@ class Plugin:
         except Exception as e:
             logger.error(e, "error")
 
+    async def get_tailscale_mullvad_ip_list(self):
+        """
+        Get the mullvad exit nodes. Returns empty dict if not exists
+        """
+        try:
+            output = subprocess.check_output(
+                ["tailscale", "exit-node", "list"], stderr=subprocess.DEVNULL
+            )
+
+            lines = [line for line in output.splitlines() if len(line) != 0]
+            mullvad_ip_pattern = r"([\d+]+\.[\d+]+\.[\d+]+\.[\d+]+)\s+([a-z]+-[a-z]+-wg-[\d]+\.mullvad\.ts\.net)\s+([\wåäö,]+\s?[\wåäö,]+)\s+([\wåäö,]+\s?[\wåäö,]+)\s+([-|Offline])"
+            mullvad_ips = {}
+            for line in lines:
+                match = re.search(mullvad_ip_pattern, str(line))
+                if match:
+                    ip = match.group(1)
+                    host = match.group(2)
+                    country = match.group(3)
+                    city = match.group(4)
+                    online = match.group(5)
+                    # Ignore any exit node that is not online
+                    if online != "-":
+                        continue
+
+                    obj = {
+                        "ip": ip,
+                        "host": host,
+                        "city": city,
+                    }
+                    if mullvad_ips.get(country):
+                        mullvad_ips[country].append(obj)
+                    else:
+                        mullvad_ips[country] = [obj]
+
+            return mullvad_ips
+        except Exception as e:
+            logger.error(e, "error")
+        pass
+
     async def get_tailscale_device_status(self):
         """
         Get the status of Tailscale devices.
