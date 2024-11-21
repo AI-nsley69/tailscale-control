@@ -2,12 +2,12 @@ import {
   definePlugin,
   PanelSection,
   PanelSectionRow,
-  ServerAPI,
+  type ServerAPI,
   staticClasses,
   ToggleField,
   SuspensefulImage,
   DropdownItem,
-  DropdownOption,
+  type DropdownOption,
   Field,
   TextField,
   ConfirmModal,
@@ -15,7 +15,7 @@ import {
   showModal,
   Focusable
 } from "decky-frontend-lib";
-import { VFC,
+import { type VFC,
          useState,
          useEffect
         } from "react";
@@ -45,7 +45,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
   // https://wiki.deckbrew.xyz/en/api-docs/decky-frontend-lib/custom/components/ReorderableList
   const [ deviceStatus, setDeviceStatus ] = useState<JSX.Element>(<div>Offline</div>);
 
-  function getInitialState(key: string, defaultState:any = 0, paramString:string = 'value') {
+  function getInitialState(key: string, defaultState: any = 0, paramString = 'value') {
     const settingsString = localStorage.getItem(key);
     if (!settingsString) {
       return defaultState;
@@ -75,14 +75,14 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
   const getExitNodeIPList = async () => {
     const data = await serverAPI.callPluginMethod("get_tailscale_exit_node_ip_list", {});
     if (data.success) {
-      var exitNodeIPList = data.result as string[];
+      const exitNodeIPList = data.result as string[];
       // console.log("Data Exit Node IP List: ");
       // console.log(exitNodeIPList);
-      var exitNodeIPListOptions: DropdownOption[] = [{ data: 0, label: "Unset" }];
+      const exitNodeIPListOptions: DropdownOption[] = [{ data: 0, label: "Unset" }];
       // use map to populate the dropdown list
       exitNodeIPList.map((ip, _) => {
         if (exitNodeIPListOptions.find((o) => String(o.label) === String(ip)) || ip === null || String(ip) === '') {
-          console.log("IP already exists in list: " + ip);
+          console.log(`IP already exists in list: ${ip}`);
         } else {
           // append to the end of the list
           exitNodeIPListOptions.push({ data: exitNodeIPListOptions.length, label: String(ip) });
@@ -92,7 +92,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
       console.log(exitNodeIPListOptions);
       togglerAndSetter(setTailscaleExitNodeIPList, LOCAL_STORAGE_KEY_TAILSCALE_EXIT_NODE_LIST, exitNodeIPListOptions);
       togglerAndSetter(setTailscaleExitNodeIPListDisabled, LOCAL_STORAGE_KEY_TAILSCALE_EXIT_NODE_LIST_DISABLED, false)
-      var toggleState = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE);
+      const toggleState = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE);
       toggleState? JSON.parse(toggleState).value ? togglerAndSetter(setTailscaleExitNodeIPListDisabled, LOCAL_STORAGE_KEY_TAILSCALE_EXIT_NODE_LIST_DISABLED, false) : togglerAndSetter(setTailscaleExitNodeIPListDisabled, LOCAL_STORAGE_KEY_TAILSCALE_EXIT_NODE_LIST_DISABLED, true) : null;
     }
   }
@@ -108,14 +108,14 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
       }
     } 
     if (toggle === 'up') {
-      var node_ip_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_NODE_IP);
-      var allow_lan_access_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_ALLOW_LAN);
-      var login_server_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_LOGIN_SERVER);
-      var custom_flags_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_UP_CUSTOM_FLAGS);
-      var node_ip_var = node_ip_getter? JSON.parse(node_ip_getter).value : '';
-      var login_server_var = login_server_getter? JSON.parse(login_server_getter).value : TAILSCALE_LOGIN_SERVER;
-      var custom_flags_var = custom_flags_getter? JSON.parse(custom_flags_getter).value : DEFAULT_TAILSCALE_UP_CUSTOM_FLAGS;
-      var allow_lan_access_var = allow_lan_access_getter? JSON.parse(allow_lan_access_getter).value : true;
+      const node_ip_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_NODE_IP);
+      const allow_lan_access_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_ALLOW_LAN);
+      const login_server_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_LOGIN_SERVER);
+      const custom_flags_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_UP_CUSTOM_FLAGS);
+      const node_ip_var = node_ip_getter? JSON.parse(node_ip_getter).value : '';
+      const login_server_var = login_server_getter? JSON.parse(login_server_getter).value : TAILSCALE_LOGIN_SERVER;
+      const custom_flags_var = custom_flags_getter? JSON.parse(custom_flags_getter).value : DEFAULT_TAILSCALE_UP_CUSTOM_FLAGS;
+      const allow_lan_access_var = allow_lan_access_getter? JSON.parse(allow_lan_access_getter).value : true;
       const data = await serverAPI.callPluginMethod<{
         node_ip: string, 
         allow_lan_access: boolean,
@@ -130,7 +130,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
       // console.log("Toggle Up Data: " + data.result);
       // console.log("Toggle Up Success: " + data.success);
       if (data.success) {
-        console.log("Toggle up state: " + data.result + " with login server: " + login_server_var + " and custom flags: " + custom_flags_var + " and node ip: " + node_ip_var + " and allow lan access: " + allow_lan_access_var);
+        console.log(`Toggle up state: ${data.result} with login server: ${login_server_var} and custom flags: ${custom_flags_var} and node ip: ${node_ip_var} and allow lan access: ${allow_lan_access_var}`);
         getExitNodeIPList();
       }
     }
@@ -138,7 +138,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
 
   const tailscaleUp = async(log: string) => {
     console.log(log);
-    var tailscaleState = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE);
+    const tailscaleState = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE);
     if (tailscaleState) {
       JSON.parse(tailscaleState).value ? callPluginMethod('up') : null;
     }
@@ -151,18 +151,18 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
 
   const toggleTailscale = async(switchValue: boolean) => {
     togglerAndSetter(setTailscaleToggleState, LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE, switchValue);
-    console.log("Tailscale toggled: "+ switchValue);
+    console.log(`Tailscale toggled: ${switchValue}`);
     callPluginMethod(switchValue ? 'up' : 'down');
   }
 
   const toggleLANAccess = async(switchValue: boolean) => {
     togglerAndSetter(setTailscaleAllowLAN, LOCAL_STORAGE_KEY_TAILSCALE_ALLOW_LAN, switchValue);
-    tailscaleUp("LAN Access toggled: "+ switchValue);
+    tailscaleUp(`LAN Access toggled: ${switchValue}`);
   }
 
   const setNodeIP = async(ip: DropdownOption) => {
     togglerAndSetter(setTailscaleNodeIP, LOCAL_STORAGE_KEY_TAILSCALE_NODE_IP, ip.label==="Unset"? '' : ip.label);
-    tailscaleUp("Exit Node IP set to: "+ ip.label);
+    tailscaleUp(`Exit Node IP set to: ${ip.label}`);
   }
 
   const setLoginServer = async(url: string) => {
@@ -182,7 +182,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
     // console.log(flags)
     // console.log(typeof(flags))
     // Ensure using regex --operator=\S+ that flags contains an operator that is not empty
-    togglerAndSetter(setTailscaleUpCustomFlags, LOCAL_STORAGE_KEY_TAILSCALE_UP_CUSTOM_FLAGS, flags.match(/--operator=\S+/) ? flags : DEFAULT_TAILSCALE_UP_CUSTOM_FLAGS+" "+flags.trim());
+    togglerAndSetter(setTailscaleUpCustomFlags, LOCAL_STORAGE_KEY_TAILSCALE_UP_CUSTOM_FLAGS, flags.match(/--operator=\S+/) ? flags : `${DEFAULT_TAILSCALE_UP_CUSTOM_FLAGS} ${flags.trim()}`);
     // var custom_flags_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_UP_CUSTOM_FLAGS);
     // var custom_flags_var = custom_flags_getter? JSON.parse(custom_flags_getter).value : "NOT SET"
     // console.log("Custom Flags set to: "+ custom_flags_var);
@@ -191,7 +191,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
   const getTailscaleState = async () => {
     const data = await serverAPI.callPluginMethod("get_tailscale_state", {});
     if (data.success) {
-      var value = Boolean(data.result)
+      const value = Boolean(data.result)
       togglerAndSetter(setTailscaleToggleState, LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE, value);
     }
   }
@@ -228,7 +228,7 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
 
   const popupMiscSetting = () => {
     let closePopup = () => {};
-    let Popup = () => {
+    const Popup = () => {
       const [login_server, set_login_server] = useState<string>(tailscaleLoginServer);
       const [custom_flags, set_custom_flags] = useState<string>(tailscaleUpCustomFlags);
 
@@ -236,15 +236,15 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
         onOK={() => {
           login_server ? setLoginServer(login_server) : setLoginServer(TAILSCALE_LOGIN_SERVER);
           custom_flags ? setCustomFlags(custom_flags) : setCustomFlags(DEFAULT_TAILSCALE_UP_CUSTOM_FLAGS);
-          var tailscale_state_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE);
+          const tailscale_state_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE);
           // var ts_login_server_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_LOGIN_SERVER);
           // var ts_custom_flags_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_UP_CUSTOM_FLAGS);
-          var tailscale_state = tailscale_state_getter? JSON.parse(tailscale_state_getter).value : false;
+          const tailscale_state = tailscale_state_getter? JSON.parse(tailscale_state_getter).value : false;
           // var ls = ts_login_server_getter? JSON.parse(ts_login_server_getter).value : "UNSET LS";
           // var cf = ts_custom_flags_getter? JSON.parse(ts_custom_flags_getter).value : "UNSET CF";
           if (tailscale_state) {
             callPluginMethod('down');
-            tailscaleUp("Restarting with login server: "+ tailscaleLoginServer + " and custom flags: "+ tailscaleUpCustomFlags);
+            tailscaleUp(`Restarting with login server: ${tailscaleLoginServer} and custom flags: ${tailscaleUpCustomFlags}`);
           }
         }}>
             <p style={{color: 'red', fontWeight: 'bold'}}>NOTE: Only change stuff here if you know what you are doing, otherwise it may result in a broken config.</p>
@@ -269,18 +269,18 @@ const Content: VFC<{ serverAPI: ServerAPI }> = ({ serverAPI }) => {
   // set up the initial state
   useEffect(() => {
     console.log('mounted');
-    var node_ip_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_NODE_IP);
-    var allow_lan_access_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_ALLOW_LAN);
-    var exit_node_list_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_EXIT_NODE_LIST);
-    var exit_node_list_disabled_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_EXIT_NODE_LIST_DISABLED);
+    const node_ip_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_NODE_IP);
+    const allow_lan_access_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_ALLOW_LAN);
+    const exit_node_list_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_EXIT_NODE_LIST);
+    const exit_node_list_disabled_getter = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_EXIT_NODE_LIST_DISABLED);
     node_ip_getter? JSON.parse(node_ip_getter).value : false;
     allow_lan_access_getter? JSON.parse(allow_lan_access_getter).value : true;
     exit_node_list_getter? JSON.parse(exit_node_list_getter).value : [{ data: 0, label: "Unset" }];
     exit_node_list_disabled_getter? JSON.parse(exit_node_list_disabled_getter).value : true;
     const interval = setInterval(() => {
       getTailscaleState();
-      var tailscaleState = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE);
-      var is_ts_up = tailscaleState? JSON.parse(tailscaleState).value : false;
+      const tailscaleState = localStorage.getItem(LOCAL_STORAGE_KEY_TAILSCALE_TOGGLE);
+      const is_ts_up = tailscaleState? JSON.parse(tailscaleState).value : false;
       is_ts_up ? (setTailscaleExitNodeIPListDisabled(false), getDeviceStatus()) : (setDeviceStatus(<div>Offline</div>), setTailscaleExitNodeIPListDisabled(true));
     }, 1000);
     return () => {clearInterval(interval); console.log('unmounted');}
